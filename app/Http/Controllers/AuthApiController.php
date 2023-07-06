@@ -25,18 +25,21 @@ class AuthApiController extends Controller
         if ($validator->fails()) {
             return response()->json(['error' => $validator->messages()], 200);
         }
-        // dd('ok');
         
         try {
-            $dataUser = User::select('*')->join('roles', 'roles.role_id', "=", "users.role_id")->where('email', $request->email);
+            $dataUser = User::select('*')->join('user_details', 'user_details.user_id', "=", "users.user_id")->join('roles', 'roles.role_id', "=", "users.role_id")->where('email', $request->email);
 
             if ($dataUser->count() > 0) {
                 $data = $dataUser->first();
                 $rowsUser = [
                     'user_id' => $data->user_id,
-                    'name' => $data->name,
                     'email' => $data->email,
-                    'hp' => $data->hp,
+                    'name' => $data->name,
+                    'jk' => $data->jk,
+                    'tgl_lahir' => $data->tgl_lahir,
+                    'no_hp' => $data->no_hp,
+                    'pekerjaan' => $data->pekerjaan,
+                    'alamat' => $data->alamat,
                 ];
 
                 $token = JWTAuth::claims($rowsUser)->attempt($credentials);
@@ -76,16 +79,15 @@ class AuthApiController extends Controller
 
         try {
             JWTAuth::parseToken()->invalidate($token);
-
             return response()->json([
                 'success'   => true,
                 'message' => 'Berhasil logout'
-            ]);
+            ], 200);
         } catch (TokenExpiredException $exception) {
             return response()->json([
-                'success'   => false,
+                'success'   => true,
                 'message' => 'Token expired'
-            ], 401);
+            ], 201);
         } catch (TokenInvalidException $exception) {
             return response()->json([
                 'success'   => false,
@@ -93,9 +95,9 @@ class AuthApiController extends Controller
             ], 401);
         } catch (JWTException $exception) {
             return response()->json([
-                'success'   => false,
+                'success'   => true,
                 'message' => 'Token missing'
-            ], 500);
+            ], 201);
         }
     }
 }

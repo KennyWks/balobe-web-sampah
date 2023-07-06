@@ -2,8 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\News;
 use App\Models\User;
 use App\Models\Roles;
+use App\Models\UserDetails;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -33,29 +35,62 @@ class DatabaseSeeder extends Seeder
             'deskripsi' => 'role untuk penampung',
         ])->getAttributes();
 
-        User::create([
-            'name' => 'kenny',
+        $user1 = User::create([
             'email' => 'kenny@mail.com',
-            'hp' => '081247569523',
             'password' => Hash::make('admin1234'),
             'role_id' => $role1['role_id'],
         ])->getAttributes();
 
-        User::create([
-            'name' => 'robert',
+        UserDetails::create([
+            'user_id' => $user1['user_id'],
+            'name' => 'kenny',
+            'jk' => 'Laki-laki',
+            'tgl_lahir' => '1997-01-01',
+            'no_hp' => '081247569523',
+            'pekerjaan' => 'PNS',
+            'alamat' => 'Lasiana',
+        ]);
+
+        $user2 = User::create([
             'email' => 'robert@mail.com',
-            'hp' => '081247569521',
             'password' => Hash::make('admin1234'),
             'role_id' => $role2['role_id'],
         ])->getAttributes();
 
-        User::create([
-            'name' => 'PT. Pengelola Sampah',
+        UserDetails::create([
+            'user_id' => $user2['user_id'],
+            'name' => 'robert',
+            'jk' => 'Laki-laki',
+            'tgl_lahir' => '1998-01-01',
+            'no_hp' => '081247569521',
+            'pekerjaan' => 'PNS',
+            'alamat' => 'Penfui',
+        ]);
+
+        $user3 = User::create([
             'email' => 'pengelola.sampah@mail.com',
-            'hp' => '081247569522',
             'password' => Hash::make('admin1234'),
             'role_id' => $role3['role_id'],
         ])->getAttributes();
 
+        UserDetails::create([
+            'user_id' => $user3['user_id'],
+            'name' => 'PT. Pengelola Sampah',
+            'jk' => '',
+            'tgl_lahir' => '2000-01-01',
+            'no_hp' => '081247569522',
+            'pekerjaan' => '',
+            'alamat' => 'Oesapa',
+        ]);
+
+        for ($i=1; $i <= 4 ; $i++) { 
+            News::create([
+                'judul' => "$i Lorem, ipsum dolor sit amet consectetur adipisicing elit.",
+                'isi' => "$i Ad atque voluptatibus enim harum placeat exercitationem suscipit ipsum tempora doloribus porro earum, laborum quibusdam debitis, accusantium quas numquam nobis incidunt quo.",
+                'foto' => "/unggah/news/user-$i.jpg",
+                'tanggal' => "202$i-01-01",
+                'keterangan' => "ket $i",
+            ]);
+        }
     }
 }

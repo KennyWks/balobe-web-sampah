@@ -23,9 +23,7 @@ class User extends Authenticatable implements JWTSubject
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
         'email',
-        'hp',
         'password',
     ];
 
@@ -66,7 +64,7 @@ class User extends Authenticatable implements JWTSubject
     public function scopeFilter($query, array $filters)
     {
         $query->when($filters['search'] ?? false, function ($query, $search) {
-            return $query->where('name', 'ILIKE', $search)->orWhere('email', 'ILIKE', $search)->orWhere('hp', 'ILIKE', $search);
+            return $query->where('email', 'ILIKE', $search);
         });
     }
 
@@ -74,10 +72,5 @@ class User extends Authenticatable implements JWTSubject
     {
         return User::select("users.*", "roles.*")->join("roles", "roles.role", "=", "users.role");
     }
-
-    // public function hasRole($role_name)
-    // {
-    //     return $this->roles()->where('identitas.identitas_id', '=', auth()->user()->identitas_id)->where('roles.role_name', '=', $role_name)->count() == 1;
-    // }
 
 }

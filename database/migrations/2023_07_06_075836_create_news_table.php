@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
-class CreateUsersTable extends Migration
+class CreateNewsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -15,16 +15,16 @@ class CreateUsersTable extends Migration
     public function up()
     {
         DB::statement('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
-        Schema::create('users', function (Blueprint $table) {
-            $table->uuid('user_id')->primary();
-            $table->string('email');
-            $table->string('password');
-            $table->timestamp('email_verified_at')->nullable();
-            $table->uuid('role_id');
-            $table->rememberToken();
+        Schema::create('news', function (Blueprint $table) {
+            $table->uuid('news_id')->primary();
+            $table->string('judul');
+            $table->text('isi');
+            $table->string('foto');
+            $table->date('tanggal');
+            $table->text('keterangan');
             $table->timestamps();
         });
-        DB::statement("ALTER TABLE users ALTER COLUMN user_id SET DEFAULT uuid_generate_v4();");
+        DB::statement("ALTER TABLE news ALTER COLUMN news_id SET DEFAULT uuid_generate_v4();");
     }
 
     /**
@@ -34,6 +34,6 @@ class CreateUsersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('news');
     }
 }
