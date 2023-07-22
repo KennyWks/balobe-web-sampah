@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use JWTAuth;
+use App\Models\UserDetails;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Illuminate\Support\Facades\Validator;
 
@@ -14,14 +16,12 @@ class AuthApiController extends Controller
     {
         $credentials = $request->only('email', 'password');
 
-        //valid credential
         $validator = Validator::make($credentials, [
             'email' => 'required|email',
             'password' => 'required'
             // 'password' => 'required|string|min:8|max:50',
         ]);
 
-        //Send failed response if request is not valid
         if ($validator->fails()) {
             return response()->json(['error' => $validator->messages()], 200);
         }
@@ -76,28 +76,73 @@ class AuthApiController extends Controller
     public function logout(Request $request)
     {
         $token = $request->header('Authorization');
-
         try {
-            JWTAuth::parseToken()->invalidate($token);
+            JWTAuth::invalidate($token);
             return response()->json([
-                'success'   => true,
-                'message' => 'Berhasil logout'
-            ], 200);
-        } catch (TokenExpiredException $exception) {
-            return response()->json([
-                'success'   => true,
-                'message' => 'Token expired'
-            ], 201);
-        } catch (TokenInvalidException $exception) {
-            return response()->json([
-                'success'   => false,
-                'message' => 'Token invalid'
-            ], 401);
+                'success' => true,
+                'message' => 'Proses keluar berhasil'
+            ]);
         } catch (JWTException $exception) {
             return response()->json([
-                'success'   => true,
-                'message' => 'Token missing'
-            ], 201);
+                'success' => false,
+                'message' => 'Maaf, Proses keluar gagal'
+            ], 500);
+        }
+    }
+
+    public function updateUser(Request $request, $user_id){
+        $input = $request->only('name', 'jk', "tglLahir", "noHP", "email", "password", "pekerjaan");
+
+        $validator = Validator::make($input, [
+            "name" => "required",
+            "jk" => "required",
+            "tglLahir" => "required|date",
+            "noHP" => "required|numeric|digits_between:11,12",
+            "email" => "required|email",
+            "password" => "string|min:8",
+            "pekerjaan" => "required",
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->messages()], 200);
+            try {
+                User::where('user_id', $user_id)->update([
+                    "email" => $request->input("email"),
+                    "password" => Hash::make($request->input("password")),
+                ]);
+
+                UserDetails::where('user_id', $user_id)->update([
+                    "name" => $request->input("name"),
+                    "jk" => $request->input("jk"),
+                    "tgl_lahir" => $request->input("tgl_lahir"),
+                    "no_hp" => $request->input("no_hp"),
+                    "pekerjaan" => $request->input("pekerjaan"),
+                    // "alamat" => $request->input("alamat"),
+                ]);
+
+                $token = JWTAuth::claims($input);
+                if ($token) {
+                    return response()->json([
+                        'status' => 200,
+                        'success' => true,
+                        'message' => 'Data berhasil diubah.',
+                        'token' => $token,
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 400,
+                        'success' => false,
+                        'message' => 'Data berhasil diubah.',
+                    ]);
+                }
+
+            } catch (\Throwable $th) {
+                return response()->json([
+                    'status' => 500,
+                    'success' => false,
+                    'message' => 'Failed!',
+                ]);
+            }
         }
     }
 }

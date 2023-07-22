@@ -22,4 +22,11 @@ use Illuminate\Support\Facades\Route;
  
 Route::resource('news', NewsController::class);
 Route::post('/signin', [AuthApiController::class, 'login']);
-Route::post('/signout', [AuthApiController::class, 'logout']);
+
+Route::group(['middleware' => ['jwt.verify'], 'prefix' => 'user'], function() {
+    Route::post('/signout', [AuthApiController::class, 'logout']);
+    Route::put('update/user/{user}',  [ProductController::class, 'updateUser']);
+    // Route::get('get_user', [ApiController::class, 'get_user']);
+    // Route::post('create', [ProductController::class, 'store']);
+    // Route::delete('delete/{product}',  [ProductController::class, 'destroy']);
+});
