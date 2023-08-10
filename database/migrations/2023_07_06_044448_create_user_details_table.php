@@ -17,7 +17,7 @@ class CreateUserDetailsTable extends Migration
         DB::statement('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
         Schema::create('user_details', function (Blueprint $table) {
             $table->uuid('user_detail_id')->primary();
-            $table->uuid('user_id');
+            $table->uuid('user_id')->nullable();
             $table->string('name')->nullable();
             $table->string('jk', 9)->nullable();
             $table->date('tgl_lahir')->nullable();

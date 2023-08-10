@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Roles;
 use App\Models\User;
 use App\Models\UserDetails;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
+use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 use Illuminate\Support\Facades\Validator;
 
 class AuthApiController extends Controller
@@ -30,6 +33,7 @@ class AuthApiController extends Controller
             $dataUser = User::select('*')->join('user_details', 'user_details.user_id', "=", "users.user_id")->join('roles', 'roles.role_id', "=", "users.role_id")->where('email', $request->email);
 
             if ($dataUser->count() > 0) {
+
                 $data = $dataUser->first();
                 $rowsUser = [
                     'user_id' => $data->user_id,
@@ -45,54 +49,60 @@ class AuthApiController extends Controller
                 $token = JWTAuth::claims($rowsUser)->attempt($credentials);
                 if ($token) {
                     return response()->json([
-                        'status' => 200,
                         'success' => true,
                         'message' => 'Login berhasil.',
                         'token' => $token,
-                    ]);
+                    ], 200);
                 } else {
                     return response()->json([
-                        'status' => 400,
                         'success' => false,
                         'message' => 'Email atau password salah.',
-                    ]);
+                    ], 400);
                 }
             } else {
                 return response()->json([
-                    'status' => 400,
                     'success' => false,
                     'message' => 'Data anda tidak ditemukan.',
-                ]);
+                ], 400);
             }
         } catch (JWTException $e) {
             return response()->json([
-                'status' => 500,
                 'success' => false,
                 'message' => 'Token tidak valid.',
-            ]);
+            ], 500);
         }
     }
 
     public function logout(Request $request)
     {
-        $token = $request->header('Authorization');
         try {
-            JWTAuth::invalidate($token);
-            return response()->json([
-                'success' => true,
-                'message' => 'Proses keluar berhasil'
-            ]);
-        } catch (JWTException $exception) {
+            if (!$user = JWTAuth::parseToken()->authenticate()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'User not found!',
+                    ], 404);
+            } else {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Berhasil logout!',
+                ], 201);
+            }
+        } catch (TokenExpiredException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Maaf, Proses keluar gagal'
-            ], 500);
+                'message' => 'Token expired!',
+            ], 404);
+        } catch (TokenInvalidException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Token invalid!',
+            ], 400);
         }
     }
 
-    public function updateUser(Request $request, $user_id){
+    public function updateOrCreateUser(Request $request){
         $input = $request->only('name', 'jk', "tglLahir", "noHP", "email", "password", "pekerjaan");
-
+        
         $validator = Validator::make($input, [
             "name" => "required",
             "jk" => "required",
@@ -105,44 +115,54 @@ class AuthApiController extends Controller
 
         if ($validator->fails()) {
             return response()->json(['error' => $validator->messages()], 200);
-            try {
-                User::where('user_id', $user_id)->update([
-                    "email" => $request->input("email"),
-                    "password" => Hash::make($request->input("password")),
-                ]);
+        }
 
-                UserDetails::where('user_id', $user_id)->update([
-                    "name" => $request->input("name"),
-                    "jk" => $request->input("jk"),
-                    "tgl_lahir" => $request->input("tgl_lahir"),
-                    "no_hp" => $request->input("no_hp"),
-                    "pekerjaan" => $request->input("pekerjaan"),
-                    // "alamat" => $request->input("alamat"),
-                ]);
+        $user_id = [
+            "user_id" => $request->input("user_id"),
+        ];
 
-                $token = JWTAuth::claims($input);
-                if ($token) {
-                    return response()->json([
-                        'status' => 200,
-                        'success' => true,
-                        'message' => 'Data berhasil diubah.',
-                        'token' => $token,
-                    ]);
-                } else {
-                    return response()->json([
-                        'status' => 400,
-                        'success' => false,
-                        'message' => 'Data berhasil diubah.',
-                    ]);
-                }
+        $credentials = [
+            "email" => $request->input("email"),
+            "password" => Hash::make($request->input("password")),
+        ];
 
-            } catch (\Throwable $th) {
-                return response()->json([
-                    'status' => 500,
-                    'success' => false,
-                    'message' => 'Failed!',
+        $rowsUser = [
+            "name" => $request->input("name"),
+            "jk" => $request->input("jk"),
+            "tgl_lahir" => $request->input("tglLahir"),
+            "no_hp" => $request->input("noHP"),
+            "pekerjaan" => $request->input("pekerjaan"),
+            // "alamat" => $request->input("alamat"),
+        ];
+        
+        try {
+            $user = User::updateOrCreate($user_id, $credentials);
+            if($user->wasRecentlyCreated){
+                $collectionUser = $user->getAttributes();
+                $rowsUser['user_id'] = $collectionUser['user_id']; 
+
+                $role = Roles::where('role', 'masyarakat')->first();
+                User::where('user_id', $rowsUser['user_id'])->update([
+                    'role_id' => $role['role_id'],
                 ]);
             }
+            $userDetails = UserDetails::updateOrCreate($user_id, $rowsUser);
+            if ($userDetails) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data berhasil diproses.',
+                ], 200);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data gagal diubah.',
+                ], 400);
+            }
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed!',
+            ], 500);
         }
     }
 }
