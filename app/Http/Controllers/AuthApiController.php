@@ -101,15 +101,14 @@ class AuthApiController extends Controller
     }
 
     public function updateOrCreateUser(Request $request){
-        $input = $request->only('name', 'jk', "tglLahir", "noHP", "email", "password", "pekerjaan");
+        $input = $request->only('name', 'jk', "tgl_lahir", "no_hp", "email", "password", "pekerjaan");
         
         $validator = Validator::make($input, [
             "name" => "required",
-            "jk" => "required",
-            "tglLahir" => "required|date",
-            "noHP" => "required|numeric|digits_between:11,12",
+            "tgl_lahir" => $request->input("tgl_lahir") ? "date" : "",
+            "no_hp" => "required|numeric|digits_between:11,12",
             "email" => "required|email",
-            "password" => "string|min:8",
+            "password" => "required|string|min:8",
             "pekerjaan" => "required",
         ]);
 
@@ -129,8 +128,8 @@ class AuthApiController extends Controller
         $rowsUser = [
             "name" => $request->input("name"),
             "jk" => $request->input("jk"),
-            "tgl_lahir" => $request->input("tglLahir"),
-            "no_hp" => $request->input("noHP"),
+            "tgl_lahir" => $request->input("tgl_lahir"),
+            "no_hp" => $request->input("no_hp"),
             "pekerjaan" => $request->input("pekerjaan"),
             // "alamat" => $request->input("alamat"),
         ];
