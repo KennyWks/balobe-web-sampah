@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\News;
 use App\Models\User;
 use App\Models\Roles;
+use App\Models\Transaction;
 use App\Models\UserDetails;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -90,6 +91,19 @@ class DatabaseSeeder extends Seeder
                 'foto' => "/unggah/news/user-$i.jpg",
                 'tanggal' => "202$i-01-01",
                 'keterangan' => "ket $i",
+            ]);
+        }
+
+        for ($i=1; $i <= 4 ; $i++) { 
+            Transaction::create([
+                'user_id' => $user1['user_id'],
+                'pengepul_id' => $user2['user_id'],
+                'penampung_id' => $user3['user_id'],
+                'judul' => "Transaksi $i",
+                'deskripsi' => "Deskripsi transaksi $i",
+                'status' => $i % 2 == 0 ? "Selesai" : "Proses",
+                'keterangan' => "ket $i",
+                "foto" => "/unggah/news/user-$i.jpg"
             ]);
         }
     }

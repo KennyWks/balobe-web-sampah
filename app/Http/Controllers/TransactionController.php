@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\News;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 
-class NewsController extends Controller
+class TransactionController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -15,18 +15,18 @@ class NewsController extends Controller
     public function index()
     {
         try {
-            $result = News::limit(3)->get();
+            $result = Transaction::all();
             if($result){
                 return response()->json([
                     'success' => true,
                     'data' => $result,
-                ], 201);
+                ], 200);
             }
 
             return response()->json([
                 'success' => false,
                 'data' => [],
-            ], 201);
+            ], 200);
 
         } catch (\Throwable $th) {
             return response()->json([
@@ -66,7 +66,7 @@ class NewsController extends Controller
     public function show($id)
     {
         try {
-            $result = News::find($id);
+            $result = Transaction::find($id);
             if($result){
                 return response()->json([
                     'success' => true,
