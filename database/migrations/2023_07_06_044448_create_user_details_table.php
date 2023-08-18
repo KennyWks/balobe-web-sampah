@@ -23,6 +23,7 @@ class CreateUserDetailsTable extends Migration
             $table->date('tgl_lahir')->nullable();
             $table->string('no_hp', 12)->nullable();
             $table->string('pekerjaan')->nullable();
+            $table->string('photo')->nullable();
             $table->longText('alamat')->nullable();
             $table->timestamps();
         });

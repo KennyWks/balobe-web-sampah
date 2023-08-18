@@ -12,7 +12,6 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 use Illuminate\Support\Facades\Validator;
-
 class AuthApiController extends Controller
 {
     public function login(Request $request)
@@ -163,5 +162,55 @@ class AuthApiController extends Controller
                 'message' => 'Failed!',
             ], 500);
         }
+    }
+
+    public function uploadPhoto(Request $request){
+
+        $rules = [
+            'user_id' => 'required',
+            'photo' => 'required',
+            'type' => 'required'
+        ];
+
+        $input = [
+            'user_id' => $request->input('user_id'),
+            'photo' => $request->input('photo'),
+            'type' => $request->input('type'),
+        ];
+
+        $messages = [
+            'required' => '*Kolom :attribute wajib diisi.',
+        ];
+
+        $validator = Validator::make($input, $rules, $messages);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->messages()], 200);
+        }
+
+        try {
+            $user_id = $request->input('user_id');
+            $folderPath = "unggah/users/";
+            $explodeImage = explode("/", $request->input('type'));
+            $imageType = $explodeImage[1];
+            $image_base64 = base64_decode($request->input('photo'));
+            $file = $folderPath . $user_id . '.' .$imageType;
+            file_put_contents($file, $image_base64);
+
+            UserDetails::where("user_id", $user_id)->update([
+                "photo" => "/$file"
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Foto berhasil diunggah!',
+            ], 201);
+
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => $th,
+            ], 500);
+        }
+
     }
 }

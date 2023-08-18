@@ -49,6 +49,7 @@ class DatabaseSeeder extends Seeder
             'tgl_lahir' => '1997-01-01',
             'no_hp' => '081247569523',
             'pekerjaan' => 'PNS',
+            'photo' => '',
             'alamat' => 'Lasiana',
         ]);
 
@@ -65,6 +66,7 @@ class DatabaseSeeder extends Seeder
             'tgl_lahir' => '1998-01-01',
             'no_hp' => '081247569521',
             'pekerjaan' => 'PNS',
+            'photo' => '',
             'alamat' => 'Penfui',
         ]);
 
@@ -81,6 +83,7 @@ class DatabaseSeeder extends Seeder
             'tgl_lahir' => '2000-01-01',
             'no_hp' => '081247569522',
             'pekerjaan' => '',
+            'photo' => '',
             'alamat' => 'Oesapa',
         ]);
 
