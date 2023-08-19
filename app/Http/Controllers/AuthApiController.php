@@ -188,11 +188,15 @@ class AuthApiController extends Controller
         }
 
         try {
-            $user_id = $request->input('user_id');
             $folderPath = "unggah/users/";
-            $explodeImage = explode("/", $request->input('type'));
-            $imageType = $explodeImage[1];
-            $image_base64 = base64_decode($request->input('photo'));
+            
+            $explodeImageType = explode("/", $request->input('type'));
+            $imageType = $explodeImageType[1];
+            
+            $explodeImage = explode(" ", $request->input("photo"));
+            $image_base64 = base64_decode($explodeImage[1]);
+            
+            $user_id = $request->input('user_id');
             $file = $folderPath . $user_id . '.' .$imageType;
             file_put_contents($file, $image_base64);
 
