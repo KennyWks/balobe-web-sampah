@@ -28,10 +28,11 @@ Route::get('/', function(){
 });
 Route::resource('news', NewsController::class);
 Route::post('/signin', [AuthApiController::class, 'login']);
+Route::post('/user/create',  [AuthApiController::class, 'updateOrCreateUser']);
 
 Route::group(['middleware' => ['jwt.verify']], function() {
     Route::post('/user/signout', [AuthApiController::class, 'logout']);
-    Route::post('/user/createorupdate',  [AuthApiController::class, 'updateOrCreateUser']);
+    Route::post('/user/update',  [AuthApiController::class, 'updateOrCreateUser']);
     Route::post('/user/upload-photo', [AuthApiController::class, 'uploadPhoto']);
     Route::resource('/user/transaction', TransactionController::class);
     // Route::delete('delete/{product}',  [ProductController::class, 'destroy']);
